@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -14,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     TextView txtAzimuth, txtPitch, txtRoll;
     SensorManager sensorManager;
     Sensor magSensor, accSensor;
-    SensorEventListener listener;
+    SensorEventListener sensorEventListener;
 
     private float[] magValues, accValues;
 
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         magSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        listener = new SensorEventListener() {
+        sensorEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 switch (sensorEvent.sensor.getType()) {
@@ -66,13 +67,26 @@ public class MainActivity extends AppCompatActivity {
             public void onAccuracyChanged(Sensor sensor, int i) {
             }
         };
-        sensorManager.registerListener(listener, magSensor, SensorManager.SENSOR_DELAY_UI);
-        sensorManager.registerListener(listener, accSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(sensorEventListener, magSensor, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(sensorEventListener, accSensor, SensorManager.SENSOR_DELAY_UI);
 
 
     }
 
     private Object radian2Degree(float radian) {
         return radian * 180 / (float)Math.PI;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(sensorEventListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(sensorEventListener,magSensor,SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(sensorEventListener,accSensor,SensorManager.SENSOR_DELAY_UI);
     }
 }
